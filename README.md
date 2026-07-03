@@ -13,6 +13,25 @@
 
 ---
 
+<details>
+<summary><strong>点击展开截图</strong></summary>
+
+<p align="center">
+  <img src="assets/images/1.jpg" alt="截图1" width="800" />
+</p>
+
+<p align="center">
+  <img src="assets/images/2.jpg" alt="截图2" width="800" />
+</p>
+
+<p align="center">
+  <img src="assets/images/3.jpg" alt="截图3" width="800" />
+</p>
+
+</details>
+
+---
+
 ## 功能特点
 
 **核心功能**
