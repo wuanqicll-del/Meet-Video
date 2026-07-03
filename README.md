@@ -3,6 +3,9 @@
   <em>一个功能强大的视频下载工具，支持多种视频网站和流媒体格式。</em>
 </p>
 <p align="center">
+  基于 <a href="https://github.com/yt-dlp/yt-dlp">yt-dlp</a> 和 <a href="https://github.com/FFmpeg/FFmpeg">FFmpeg</a>
+</p>
+<p align="center">
   <a href="https://github.com/wuanqicll-del/Meet-Video"><img src="https://img.shields.io/github/v/release/wuanqicll-del/Meet-Video?logo=github" alt="GitHub releases" /></a>
   <a href="https://hub.docker.com/r/wuanqicll/meet-video"><img src="https://img.shields.io/docker/pulls/wuanqicll/meet-video?logo=docker&logoColor=white" alt="Docker pulls" /></a>
 </p>
