@@ -123,17 +123,22 @@ docker run -d \
 
 ```yaml
 services:
-  meet-video:
-    image: wuanqicll/meet-video:latest  # 镜像名称:标签
-    container_name: meet-video          # 容器名称
+  ytdlp-downloader:
+    image: wuanqicll/meet-video:latest  # 镜像名称:标签（从DockerHub拉取）
+    container_name: ytdlp-downloader    # 容器名称
     restart: always                     # 重启策略：总是重启
+    init: true                          # 启用init进程，正确处理信号和僵尸进程
     network_mode: "bridge"              # 网络模式：桥接模式
-    environment:
-      - TZ=Asia/Shanghai                # 时区设置：亚洲/上海
     ports:
       - "5052:5000"                     # 端口映射：宿主机端口:容器端口
+    healthcheck:                        # 健康检查配置
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:5000/api/config"]  # 检查API是否正常响应
+      interval: 30s                     # 检查间隔：30秒
+      timeout: 10s                      # 超时时间：10秒
+      retries: 3                        # 重试次数：3次
+      start_period: 10s                 # 启动等待时间：10秒
     volumes:
-      - ./config:/app/config            # 配置文件挂载
+      - ./config:/app/config            # 配置和任务记录挂载
       - ./downloads:/app/downloads      # 下载目录挂载
 ```
 
