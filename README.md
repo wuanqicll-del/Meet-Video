@@ -124,16 +124,13 @@
 ### Docker 部署（推荐）
 
 ```bash
-# 创建数据目录（用于持久化配置和下载文件）
-mkdir -p /path/to/config
-mkdir -p /path/to/downloads
 
 # 运行容器
 docker run -d \
   --name meet-video \          # 容器名称
-  -p 5052:5000 \               # 端口映射：宿主机端口:容器端口
-  -v /path/to/config:/app/config \      # 配置文件挂载
-  -v /path/to/downloads:/app/downloads \ # 下载目录挂载
+  -p 5000:5000 \               # 端口映射：宿主机端口:容器端口
+  -v ./config:/app/config \      # 配置文件挂载
+  -v ./downloads:/app/downloads \ # 下载目录挂载
   --restart unless-stopped \           # 重启策略：除非手动停止，否则总是重启
   wuanqicll/meet-video:latest          # 镜像名称:标签
 ```
@@ -171,50 +168,7 @@ docker-compose up -d
 
 ### 访问 WebUI
 
-打开浏览器访问：`http://你的IP:5052`
-
----
-
-## 配置说明
-
-配置文件位于 `/app/config/config.json`，包含以下选项：
-
-| 配置项 | 说明 | 默认值 |
-| :--- | :--- | :--- |
-| download_dir | 默认下载目录 | /app/downloads |
-| max_tasks | 最大并发任务数 | 3 |
-| thread_count | aria2c 下载线程数 | 16 |
-| concurrent_fragments | m3u8 线程数 | 4 |
-| cookies_file | Cookies 文件路径 | 空 |
-| routing_rules | 下载路由规则 | 见下方 |
-
-**路由规则配置：**
-
-```json
-{
-  "routing_rules": [
-    {
-      "match_type": "url_type",
-      "pattern": "m3u8",
-      "dir": "/app/downloads-m3u8"
-    },
-    {
-      "match_type": "domain",
-      "pattern": "video.twimg.com",
-      "dir": "/app/downloads-X"
-    },
-    {
-      "match_type": "domain",
-      "pattern": "youtu.be",
-      "dir": "/app/downloads-hdr"
-    }
-  ]
-}
-```
-
-**匹配类型：**
-- `url_type`：按 URL 类型匹配（m3u8、direct、other）
-- `domain`：按域名匹配
+打开浏览器访问：`http://你的IP:5000`
 
 ---
 
@@ -281,8 +235,8 @@ docker-compose up -d
 
 **5. 下载速度慢怎么办？**
 
-- 增加 `thread_count`（aria2c 线程数）
-- 增加 `concurrent_fragments`（m3u8 线程数）
+- 增加 下载线程数（aria2c 线程数）
+- 增加 m3u8线程数（m3u8 线程数）
 - 检查网络连接
 
 ---
