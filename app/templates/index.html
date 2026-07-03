@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=overlays">
+    <title>视频下载器</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="app">
+        <!-- 悬浮统计框 -->
+        <div class="floating-stats" id="floating-stats">
+            <div class="stat-row"><span class="stat-label">总任务</span><span class="stat-value" id="stat-count">0</span></div>
+            <div class="stat-row"><span class="stat-label">已完成</span><span class="stat-value" id="stat-done">0</span></div>
+            <div class="stat-row"><span class="stat-label">下载速度</span><span class="stat-value" id="stat-speed">0 B/s</span></div>
+            <div class="stat-row"><span class="stat-label">总进度</span><span class="stat-value" id="stat-progress">0%</span></div>
+        </div>
+        
+        <!-- 顶部 -->
+        <div class="header">
+            <div class="container">
+                <div class="header-top">
+                    <div class="header-stats"></div>
+                    <h1 class="logo-title" onclick="toggleSettings()" title="点击打开设置">Meet Video</h1>
+                    <div class="header-stats"></div>
+                </div>
+                
+                <!-- 输入区 -->
+                <div class="input-group">
+                    <textarea id="url-input" rows="1" placeholder="粘贴视频链接，支持多个链接一行一个"
+                              oninput="autoResize(this)"></textarea>
+                </div>
+                
+                <!-- 功能按钮 -->
+                <div class="control-bar">
+                    <button class="btn-primary" id="parse-btn" onclick="doParse()">解析</button>
+                    <button class="btn-success" id="dl-btn" onclick="doQuickDownload()">下载</button>
+                    <button class="btn-secondary" onclick="resumeAll()">继续</button>
+                    <button class="btn-secondary" onclick="stopAll()">暂停</button>
+                    <button class="btn-secondary" onclick="clearDone()">清除</button>
+                    <button class="btn-danger" onclick="deleteAll()">删除</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 任务列表 -->
+        <div class="container">
+            <div id="tasks"></div>
+        </div>
+    </div>
+
+    <!-- 格式选择浮窗 -->
+    <div id="format-overlay" class="settings-overlay" onclick="closeFormatPanel()">
+        <div class="format-panel" onclick="event.stopPropagation()">
+            <div class="format-header">
+                <h3>选择画质</h3>
+            </div>
+            <div class="video-info" id="video-info"></div>
+            <div id="custom-formats">
+                <div id="sec-combined" style="display:none">
+                    <h4>合并格式（视频+音频）</h4>
+                    <div class="table-wrap"><table id="tbl-combined"><thead><tr>
+                        <th>HDR</th><th>分辨率</th><th>帧率</th><th>编码</th><th>大小</th><th>码率</th>
+                    </tr></thead><tbody></tbody></table></div>
+                </div>
+                <div id="sec-video" style="display:none">
+                    <h4>视频流</h4>
+                    <div class="table-wrap"><table id="tbl-video"><thead><tr>
+                        <th>HDR</th><th>分辨率</th><th>帧率</th><th>编码</th><th>大小</th><th>码率</th>
+                    </tr></thead><tbody></tbody></table></div>
+                </div>
+                <div id="sec-audio" style="display:none">
+                    <h4>音频流</h4>
+                    <div class="table-wrap"><table id="tbl-audio"><thead><tr>
+                        <th>编码</th><th>大小</th><th>码率</th>
+                    </tr></thead><tbody></tbody></table></div>
+                </div>
+            </div>
+            <div class="settings-actions">
+                <button class="btn-secondary" onclick="closeFormatPanel()">取消</button>
+                <button class="btn-primary" onclick="doDownload()">下载</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 设置弹窗 -->
+    <div id="settings-overlay" class="settings-overlay" onclick="toggleSettings()">
+        <div class="settings-panel" onclick="event.stopPropagation(); closeSettingsDropdowns()">
+            <h2>设置</h2>
+            <div class="field">
+                <label>下载目录</label>
+                <small>默认下载保存路径</small>
+                <div class="custom-select" id="dir-select">
+                    <div class="custom-select-trigger" id="dir-trigger">
+                        <span class="custom-select-value" id="cfg-dir-text">/app/downloads</span>
+                        <span class="custom-select-arrow">▼</span>
+                    </div>
+                </div>
+                <input type="hidden" id="cfg-dir" value="/app/downloads">
+            </div>
+            <div class="field">
+                <label>下载路由规则</label>
+                <small>按顺序匹配，命中后存入对应目录（匹配不到则用默认目录）</small>
+                <div id="routing-rules"></div>
+                <button class="btn-sm add-rule" onclick="addRoutingRule()">+</button>
+            </div>
+            <div class="field-row">
+                <div class="field">
+                    <label>最大并发任务</label>
+                    <small>同时下载的任务数</small>
+                    <input id="cfg-max" type="number" min="1" max="20" placeholder="3">
+                </div>
+                <div class="field">
+                    <label>m3u8线程数</label>
+                    <small>HLS/DASH 分片下载线程数</small>
+                    <input id="cfg-frag" type="number" min="1" max="32" placeholder="4">
+                </div>
+            </div>
+            <div class="field-row">
+                <div class="field">
+                    <label>下载线程数</label>
+                    <small>aria2c 多线程下载线程数</small>
+                    <input id="cfg-thread" type="number" min="1" max="64" placeholder="16">
+                </div>
+                <div class="field">
+                    <label>Cookies 文件路径</label>
+                    <small>用于需要登录的网站</small>
+                    <input id="cfg-cookies" placeholder="/app/config/cookies.txt">
+                </div>
+            </div>
+            <div class="settings-actions">
+                <button class="btn-secondary" onclick="toggleSettings()">取消</button>
+                <button class="btn-primary" onclick="saveConfig()">保存</button>
+            </div>
+        </div>
+        <!-- 目录选项浮层（在 panel 外，避免嵌套 backdrop-filter） -->
+        <div class="custom-select-options" id="dir-options" onclick="event.stopPropagation()">
+            <div class="custom-select-option" data-value="/app/downloads">
+                /app/downloads
+                <span class="option-desc">默认下载目录</span>
+            </div>
+            <div class="custom-select-option" data-value="/app/downloads-m3u8">
+                /app/downloads-m3u8
+                <span class="option-desc">m3u8 专用下载目录</span>
+            </div>
+            <div class="custom-select-option" data-value="/app/downloads-X">
+                /app/downloads-X
+                <span class="option-desc">自定义下载目录</span>
+            </div>
+            <div class="custom-select-option" data-value="/app/downloads-hdr">
+                /app/downloads-hdr
+                <span class="option-desc">YouTube 专用下载目录</span>
+            </div>
+        </div>
+        <!-- 路由规则下拉浮层 -->
+        <div class="custom-select-options" id="rule-dropdown" onclick="event.stopPropagation()"></div>
+    </div>
+
+    <!-- 确认弹窗 -->
+    <div id="confirm-overlay" class="settings-overlay" onclick="hideConfirm()">
+        <div class="settings-panel confirm-panel" onclick="event.stopPropagation()">
+            <h2 id="confirm-title">确认操作</h2>
+            <p id="confirm-message" style="font-size: 14px; color: var(--text2); margin-bottom: 16px; text-align: center;"></p>
+            <div class="confirm-actions">
+                <button class="btn-secondary" onclick="hideConfirm()">取消</button>
+                <button class="btn-danger" onclick="confirmOk()">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toasts" class="toasts"></div>
+    <div id="title-tip" class="title-tip"></div>
+    <script src="/static/app.js"></script>
+</body>
+</html>
