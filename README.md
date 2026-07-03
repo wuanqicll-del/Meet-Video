@@ -35,6 +35,24 @@
 
 ---
 
+## 猫抓一键发送配置
+
+在猫抓扩展中添加自定义一键发送配置：
+
+| 配置项 | 值 |
+| :--- | :--- |
+| 请求方式 | `POST` |
+| Content-Type | `application/json;charset=utf-8` |
+| 地址 | `http://你的IP:5052/api/download` |
+| 请求体 | `{"url":"${url}","title":"${title}"}` |
+
+**使用方法：**
+1. 在猫抓扩展中找到视频链接
+2. 点击一键发送按钮
+3. 视频会自动发送到 Meet-Video 开始下载
+
+---
+
 ## 功能特点
 
 **核心功能**
@@ -133,7 +151,7 @@ services:
     init: true                          # 启用init进程，正确处理信号和僵尸进程
     network_mode: "bridge"              # 网络模式：桥接模式
     ports:
-      - "5052:5000"                     # 端口映射：宿主机端口:容器端口
+      - "5000:5000"                     # 端口映射：宿主机端口:容器端口
     healthcheck:                        # 健康检查配置
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:5000/api/config"]  # 检查API是否正常响应
       interval: 30s                     # 检查间隔：30秒
