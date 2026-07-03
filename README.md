@@ -1,6 +1,6 @@
 <h1 align="center">Meet Video</h1>
 <p align="center">
-  <em>一个功能强大的视频下载工具，支持多种视频网站和流媒体格式。</em>
+  <em>一个精美轻便功能强大的视频下载工具，支持多种视频网站和流媒体格式。</em>
 </p>
 <p align="center">
   基于 <a href="https://github.com/yt-dlp/yt-dlp">yt-dlp</a> 和 <a href="https://github.com/FFmpeg/FFmpeg">FFmpeg</a>
